@@ -31,13 +31,9 @@
 #  include <libavcodec/avcodec.h>
 #endif
 
-#if LIBAVCODEC_VERSION_MAJOR > 51
-#define bits_per_sample bits_per_coded_sample
-#endif
-
 typedef struct ff_codec_s {
   uint32_t          type;
-  enum CodecID      id;
+  enum AVCodecID      id;
   const char       *name;
 } ff_codec_t;
 
