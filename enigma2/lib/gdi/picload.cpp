@@ -530,8 +530,9 @@ static void gif_load(Cfilepara* filepara)
 	ColorMapObject *cmap;
 	int cmaps;
 	int extcode;
+	int errorCode;
 	
-	gft = DGifOpenFileName(filepara->file);
+	gft = DGifOpenFileName(filepara->file, &errorCode);
 	if (gft == NULL) 
 		return;
 	do
@@ -602,11 +603,11 @@ static void gif_load(Cfilepara* filepara)
 	}
 	while (rt != TERMINATE_RECORD_TYPE);
 
-	DGifCloseFile(gft);
+	DGifCloseFile(gft, &errorCode);
 	return;
 ERROR_R:
 	eDebug("[Picload] <Error gif>");
-	DGifCloseFile(gft);
+	DGifCloseFile(gft, &errorCode);
 }
 
 //---------------------------------------------------------------------------------------------
