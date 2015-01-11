@@ -102,7 +102,7 @@ if [ "$DO_XINE" -eq "1" ]; then
 	  echo "configuring OpenPliPC $PKG"
 	  echo "-----------------------------------------"
 
-	  ./autogen.sh --disable-xinerama --disable-musepack --prefix=/usr
+	  ./autogen.sh --disable-xinerama --disable-musepack --disable-vcd --disable-modplug --prefix=/usr
   fi	
 
   if [ "$DO_MAKEINSTALL" -eq "0" ]; then
@@ -151,7 +151,7 @@ if [ "$DO_CONFIGURE" -eq "1" ]; then
   echo "--------------------------------------"
 
   autoreconf -i
-  ./configure --prefix=$INSTALL_E2DIR --with-xlib --with-debug
+  ./configure --prefix=$INSTALL_E2DIR --with-xlib --with-debug PYTHON="/usr/bin/python2"
 fi  
  
 echo "--------------------------------------"
