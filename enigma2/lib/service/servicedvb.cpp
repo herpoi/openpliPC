@@ -32,6 +32,10 @@
 #error no byte order defined!
 #endif
 
+#include <ios>
+#include <sstream>
+#include <iomanip>
+
 class eStaticServiceDVBInformation: public iStaticServiceInformation
 {
 	DECLARE_REF(eStaticServiceDVBInformation);
@@ -1263,6 +1267,48 @@ RESULT eDVBServicePlay::start()
 {
 	printf("eDVBServicePlay::start\n");
 	eServiceReferenceDVB service = (eServiceReferenceDVB&)m_reference;
+	ePtr<eDVBResourceManager> res_mgr;
+
+	std::string remote_fallback_url;
+	ePythonConfigQuery::getConfigValue("config.usage.remote_fallback", remote_fallback_url);
+	
+	
+		/* default behaviour is to start an eit reader, and wait for now/next info, unless this is disabled */
+
+	if(!m_is_stream && !m_is_pvr &&
+			(remote_fallback_url.length() > 0) &&
+			!eDVBResourceManager::getInstance(res_mgr))
+	{
+		eDVBChannelID chid, chid_ignore;
+		int system;
+
+		service.getChannelID(chid);
+		eServiceReferenceDVB().getChannelID(chid_ignore);
+
+		if(!res_mgr->canAllocateChannel(chid, chid_ignore, system))
+		{
+			size_t index;
+
+			while((index = remote_fallback_url.find(':')) != std::string::npos)
+			{
+				remote_fallback_url.erase(index, 1);
+				remote_fallback_url.insert(index, "%3a");
+			}
+
+			std::ostringstream remote_service_ref;
+			remote_service_ref << std::hex << service.type << ":" << service.flags << ":" << 
+					service.getData(0) << ":" << service.getData(1) << ":" << service.getData(2) << ":0:0:0:0:0:" <<
+					remote_fallback_url << "/" <<
+					service.type << "%3a" << service.flags;
+			for(index = 0; index < 8; index++)
+					remote_service_ref << "%3a" << service.getData(index);
+
+			service = eServiceReferenceDVB(remote_service_ref.str());
+
+			m_is_stream = true;
+			m_is_pvr = false;
+		}
+	}
 
 	m_fd_dst = ::open("/tmp/ENIGMA_FIFO", O_RDWR);
 	if (m_fd_dst < 0)
